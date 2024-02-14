@@ -1,21 +1,23 @@
-import { Injectable, InternalServerErrorException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { Model } from 'mongoose';
 import { InjectModel } from '@nestjs/mongoose';
 import { Log } from './schemas/log.schema';
 import { CreateLogDto } from './dto/create-log.dto';
 import { UpdateLogDto } from './dto/update-log.dto';
+import { BaseUtils } from 'libs/base/base.utils';
 
 @Injectable()
-export class LogService {
+export class LogService extends BaseUtils {
 
-    constructor(@InjectModel(Log.name) private logModel: Model<Log>) {}
+    constructor(@InjectModel(Log.name) private logModel: Model<Log>) {
+      super()
+    }
 
       async getLogsByRef(refModel: number, refId: string): Promise<Log[]> {
         try {
             return await this.logModel.find<Log>({model:{refModel, refId}})
         } catch (error) {
-            console.log(error)
-            throw new InternalServerErrorException()
+            this._catchEx(error)
         }
       }
     
@@ -23,8 +25,7 @@ export class LogService {
         try {
             return await this.logModel.findById<Log>(_id).exec()
         } catch (error) {
-            console.log(error)
-            throw new InternalServerErrorException()
+          this._catchEx(error)
         }
       }
     
@@ -32,8 +33,7 @@ export class LogService {
         try {
             return await this.logModel.create(createLogDto)
         } catch (error) {
-            console.log(error)
-            throw new InternalServerErrorException()
+            this._catchEx(error)
         } 
       }
 
@@ -41,8 +41,7 @@ export class LogService {
         try {
             return await this.logModel.findByIdAndUpdate<Log>(_id, logDto, {new: true});
         } catch (error) {
-            console.log(error)
-            throw new InternalServerErrorException()
+          this._catchEx(error)
         }
           
       }
@@ -51,8 +50,7 @@ export class LogService {
         try {
             return await this.logModel.deleteOne({_id})
         } catch (error) {
-            console.log(error)
-            throw new InternalServerErrorException()
+          this._catchEx(error)
         }
       }
 
@@ -60,8 +58,7 @@ export class LogService {
         try {
             return await this.logModel.deleteMany(options)
         } catch (error) {
-            console.log(error)
-            throw new InternalServerErrorException()
+          this._catchEx(error)
         }
       }
 }
