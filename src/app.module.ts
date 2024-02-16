@@ -10,7 +10,7 @@ import { LogModule } from './log/log.module';
     LogModule,
     MongooseModule.forRoot(
       `mongodb+srv://${process.env.MONGO_USER}:${process.env.MONGO_PWD}@${process.env.MONGO_DNS}`,
-      {dbName : "db-chappy-log"}
+      {dbName : process.env.MONGO_DB_LOG}
     )
   ]})
 export class AppModule {}

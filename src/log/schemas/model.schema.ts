@@ -1,5 +1,5 @@
 import { Prop } from "@nestjs/mongoose"
-import { ModelEnum } from "../enums/model.enum"
+import { ModelEnum } from "../../enums/model.enum"
 
 export class ModelSchema {
 

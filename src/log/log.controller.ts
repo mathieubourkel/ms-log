@@ -1,18 +1,16 @@
-import { Controller, NotFoundException, ValidationPipe } from '@nestjs/common';
-import { Observable, of } from 'rxjs';
-import { ModelEnum } from './enums/model.enum';
-import { CreateLogDto } from './dto/create-log.dto';
+import { Controller, ValidationPipe } from '@nestjs/common';
+import { ModelEnum } from '../enums/model.enum';
 import { UpdateLogDto } from './dto/update-log.dto';
 import { LogService } from './log.service';
 import { Log } from './schemas/log.schema';
 import { BaseUtils } from 'libs/base/base.utils';
-import { ClientProxy, EventPattern, MessagePattern, Payload } from '@nestjs/microservices';
+import { EventPattern, MessagePattern, Payload } from '@nestjs/microservices';
+import { CreateLogDto } from './dto/create-log.dto';
 
 @Controller()
 export class LogController extends BaseUtils {
 
-    constructor(private readonly logService: LogService,
-        private readonly client: ClientProxy) {
+    constructor(private readonly logService: LogService) {
         super()
     }
 
@@ -20,7 +18,7 @@ export class LogController extends BaseUtils {
     async getLogsByIdRefModel(@Payload() params:{refModel: string, refId: string}):Promise<Log[]>{
         try {
             const result = await this.logService.getLogsByRef(ModelEnum[`${params.refModel}`], params.refId)
-            if (!result) throw new NotFoundException()
+            if (!result) this._Ex("BAD REQUEST", 400, "MS-LOG-CTRL-GET-LOGS")
             return result;
         } catch (error) {
             this._catchEx(error)
@@ -28,43 +26,34 @@ export class LogController extends BaseUtils {
     }
 
     @EventPattern('ADD_LOG')
-    create(@Payload() data:any) {
-            try {
-                return this.logService.create(data)
-            } catch (error) {
-                this._catchEx(error)
-            }
-        }
+    create(@Payload(new ValidationPipe()) createLogDto:CreateLogDto):void {
+        this.logService.create(createLogDto)
+    }
 
     @MessagePattern('MODIFY_STATUS_LOG')
-    update(@Payload('id') id:string, 
-            @Payload('body', new ValidationPipe()) log:UpdateLogDto):Observable<{}>{
+    async update<Log>(@Payload(new ValidationPipe()) updateLogDto:UpdateLogDto):Promise<Log>{
         try {
-            return of (this.logService.update<Log>(id, log))
+            return await this.logService.update<Log>(updateLogDto._id, updateLogDto)
         } catch (error) {
             this._catchEx(error)
         }
     }
 
-    @MessagePattern('DELETE_MANY_LOGS')
-    deleteMany(@Payload() body:any):Observable<{}>{
+    @MessagePattern('DELETE_MANY_LOGS_BY_DATE')
+    async deleteManyByFilter(@Payload() date:Date):Promise<unknown>{
         try {
-            // const threeMonthsAgo = new Date();
-            // threeMonthsAgo.setMonth(threeMonthsAgo.getMonth() - 3);
-            return of (this.logService.deleteMany({expiryAt : {$lte: body.date}}))
+            return await this.logService.deleteMany({expiryAt : {$lte: date}})
         } catch (error) {
             this._catchEx(error)
         }
     }
 
     @MessagePattern('DELETE_LOG')
-    delete(@Payload() id:string):Observable<{}>{
+    async delete(@Payload() id:string):Promise<unknown>{
         try {
-            return of (this.logService.deleteOne(id))
+            return await this.logService.deleteOne(id)
         } catch (error) {
             this._catchEx(error)
         }
     }
-
-    
 }

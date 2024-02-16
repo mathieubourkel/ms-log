@@ -5,8 +5,7 @@ export abstract class BaseUtils {
    _Ex = (
     message: string | string[],
     statusCode: number,
-    code: string,
-    method: string,
+    code: string
   ): never => {
     throw new RpcException({
       message,
@@ -14,7 +13,6 @@ export abstract class BaseUtils {
       context: {
         ms: "log",
         error: {
-          exceptionPosition: method,
           errorCode: code,
         },
       },
