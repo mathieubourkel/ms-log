@@ -10,5 +10,6 @@ async function bootstrap() {
     }
   });
   app.listen()
+  console.log(`[MS-LOG] with NATS`)
 }
 bootstrap();

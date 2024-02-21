@@ -15,7 +15,7 @@ export class LogController extends BaseUtils {
     }
 
     @MessagePattern('GET_LOGS')
-    async getLogsByIdRefModel(@Payload() params:{refModel: string, refId: string}):Promise<Log[]>{
+    async getLogsByIdRefModel(@Payload() params:any):Promise<Log[]>{
         try {
             const result = await this.logService.getLogsByRef(ModelEnum[`${params.refModel}`], params.refId)
             if (!result) this._Ex("BAD REQUEST", 400, "MS-LOG-CTRL-GET-LOGS")
