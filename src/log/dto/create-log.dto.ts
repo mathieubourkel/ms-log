@@ -33,5 +33,7 @@ export class CreateLogDto {
 
     @IsOptional()
     @IsDateString()
-    expiryAt:Date;
+    expiryAt:string;
 }
+
+

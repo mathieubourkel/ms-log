@@ -6,6 +6,7 @@ import { Log } from './schemas/log.schema';
 import { BaseUtils } from 'libs/base/base.utils';
 import { EventPattern, MessagePattern, Payload } from '@nestjs/microservices';
 import { CreateLogDto } from './dto/create-log.dto';
+import { getDateAddThreeMonths } from 'src/utils/getDates';
 
 @Controller()
 export class LogController extends BaseUtils {
@@ -27,7 +28,17 @@ export class LogController extends BaseUtils {
 
     @EventPattern('ADD_LOG')
     create(@Payload(new ValidationPipe()) createLogDto:CreateLogDto):void {
+        createLogDto.expiryAt = getDateAddThreeMonths()
         this.logService.create(createLogDto)
+    }
+
+    @EventPattern('ADD_MANY_LOGS')
+    createManyLogs(@Payload("data") data:any, @Payload('array') array:[]):void {
+        data.expiryAt = getDateAddThreeMonths()
+        array.map((model) => {
+            data.model = model
+            this.logService.create(data)
+        })
     }
 
     @MessagePattern('MODIFY_STATUS_LOG')
