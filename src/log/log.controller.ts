@@ -15,10 +15,21 @@ export class LogController extends BaseUtils {
         super()
     }
 
-    @MessagePattern('GET_LOGS')
-    async getLogsByIdRefModel(@Payload() params:any):Promise<Log[]>{
+    @MessagePattern('GET_LOGS_BY_MODEL')
+    async getLogsByIdRefModel(@Payload() payload:any):Promise<Log[]>{
         try {
-            const result = await this.logService.getLogsByRef(ModelEnum[`${params.refModel}`], params.refId)
+            const result = await this.logService.getLogsBySearchOptions({'model.refModel':payload.refModel, 'model.refId':payload.refId})
+            if (!result) this._Ex("BAD REQUEST", 400, "MS-LOG-CTRL-GET-LOGS")
+            return result;
+        } catch (error) {
+            this._catchEx(error)
+        }
+    }
+
+    @MessagePattern('GET_LOGS_BY_MODEL_AND_STATUS')
+    async getLogsByIdRefModelAndStatus(@Payload() payload:any):Promise<Log[]>{
+        try {
+            const result = await this.logService.getLogsBySearchOptions({'model.refModel':payload.refModel, 'model.refId':payload.refId, status: payload.status})
             if (!result) this._Ex("BAD REQUEST", 400, "MS-LOG-CTRL-GET-LOGS")
             return result;
         } catch (error) {
@@ -33,9 +44,9 @@ export class LogController extends BaseUtils {
     }
 
     @EventPattern('ADD_MANY_LOGS')
-    createManyLogs(@Payload("data") data:any, @Payload('array') array:[]):void {
+    createManyLogs(@Payload("data") data:any, @Payload('arrayModel') arrayModel:[]):void {
         data.expiryAt = getDateAddThreeMonths()
-        array.map((model) => {
+        arrayModel.map((model) => {
             data.model = model
             this.logService.create(data)
         })

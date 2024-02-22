@@ -13,9 +13,9 @@ export class LogService extends BaseUtils {
       super()
     }
 
-      async getLogsByRef(refModel: number, refId: string): Promise<Log[]> {
+      async getLogsBySearchOptions(searchOptions:{}): Promise<Log[]> {
         try {
-            return await this.logModel.find<Log>({model:{refModel, refId}})
+            return await this.logModel.find<Log>(searchOptions)
         } catch (error) {
             this._catchEx(error)
         }
